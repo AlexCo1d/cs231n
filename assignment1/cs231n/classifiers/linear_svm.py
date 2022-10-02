@@ -89,8 +89,7 @@ def svm_loss_vectorized(W, X, y, reg):
     margin = scores - scores[range(0, num_train), y].reshape(-1, 1) + delta  # N x C
     margin[range(num_train), y] = 0
     margin = (margin > 0) * margin
-    loss += margin.sum() / num_train
-    loss += 0.5 * reg * np.sum(W * W)
+    loss += (margin.sum() / num_train) + 0.5 * reg * np.sum(W * W)
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
