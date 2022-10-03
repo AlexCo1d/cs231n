@@ -1,8 +1,11 @@
+# coding=utf-8
 import numpy as np
-#from random import shuffle
+
+
+# from random import shuffle
 
 def softmax_loss_naive(W, X, y, reg):
-  """
+    """
   Softmax loss function, naive implementation (with loops)
 
   Inputs have dimension D, there are C classes, and we operate on minibatches
@@ -19,67 +22,75 @@ def softmax_loss_naive(W, X, y, reg):
   - loss as single float
   - gradient with respect to weights W; an array of same shape as W
   """
-  # Initialize the loss and gradient to zero.
-  loss = 0.0
-  dW = np.zeros_like(W)
+    # Initialize the loss and gradient to zero.
+    loss = 0.0
+    dW = np.zeros_like(W)
 
-  #############################################################################
-  # TODO: Compute the softmax loss and its gradient using explicit loops.     #
-  # Store the loss in loss and the gradient in dW. If you are not careful     #
-  # here, it is easy to run into numeric instability. Don't forget the        #
-  # regularization!                                                           #
-  #############################################################################
-  pass
-  N, C = X.shape[0], W.shape[1]
-  for i in range(N):
-      f = np.dot(X[i], W)
-      f -= np.max(f) # f.shape = C
-      loss = loss + np.log(np.sum(np.exp(f))) - f[y[i]]
-      dW[:, y[i]] -= X[i]
-      s = np.exp(f).sum()
-      for j in range(C):
-          dW[:, j] += np.exp(f[j]) / s * X[i]
-  loss = loss / N + 0.5 * reg * np.sum(W * W)
-  dW = dW / N + reg * W
-  #############################################################################
-  #                          END OF YOUR CODE                                 #
-  #############################################################################
+    #############################################################################
+    # TODO: Compute the softmax loss and its gradient using explicit loops.     #
+    # Store the loss in loss and the gradient in dW. If you are not careful     #
+    # here, it is easy to run into numeric instability. Don't forget the        #
+    # regularization!                                                           #
+    #############################################################################
+    pass
+    N, C = X.shape[0], W.shape[1]
+    for i in range(N):
+        f = np.dot(X[i], W)
+        # 不做下面这步操作（-max(f)）可能导致numeric instability, https://cs231n.github.io/linear-classify/#softmax-classifier
+        f -= np.max(f)  # f.shape = C
+        loss += np.log(np.sum(np.exp(f))) - f[y[i]]
+        dW[:, y[i]] -= X[i]
+        # s = np.exp(f).sum()
+        # for j in range(C):
+        #     dW[:, j] += np.exp(f[j]) / s * X[i]
+        for j in xrange(C):
+            s = np.exp(f[j]) / np.sum(np.exp(f))
+            if j == y[j]:
+                dW[:, j] += X[i] * (-1 + s)
+            else:
+                dW[:, j] += X[i] * s
 
-  return loss, dW
+    loss = loss / N + 0.5 * reg * np.sum(W * W)
+    dW = dW / N + reg * W
+    #############################################################################
+    #                          END OF YOUR CODE                                 #
+    #############################################################################
+
+    return loss, dW
 
 
 def softmax_loss_vectorized(W, X, y, reg):
-  """
+    """
   Softmax loss function, vectorized version.
 
   Inputs and outputs are the same as softmax_loss_naive.
   """
-  # Initialize the loss and gradient to zero.
-  loss = 0.0
-  dW = np.zeros_like(W)
+    # Initialize the loss and gradient to zero.
+    loss = 0.0
+    dW = np.zeros_like(W)
 
-  #############################################################################
-  # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
-  # Store the loss in loss and the gradient in dW. If you are not careful     #
-  # here, it is easy to run into numeric instability. Don't forget the        #
-  # regularization!                                                           #
-  #############################################################################
-  pass
-  N = X.shape[0]
-  f = np.dot(X, W) # f.shape = N, C
-  f -= f.max(axis = 1).reshape(N, 1)
-  s = np.exp(f).sum(axis = 1)
-  loss = np.log(s).sum() - f[range(N), y].sum()
+    #############################################################################
+    # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
+    # Store the loss in loss and the gradient in dW. If you are not careful     #
+    # here, it is easy to run into numeric instability. Don't forget the        #
+    # regularization!                                                           #
+    #############################################################################
+    pass
+    N = X.shape[0]
+    score = np.dot(X, W)  # score.shape = N, C
+    score -= score.max(axis=1).reshape(-1, 1)
+    s = np.exp(score) / np.exp(score).sum(axis=1).reshape(-1, 1)  # s.shape= NxC
+    loss = -np.sum(np.log(s[range(N), y]))
 
-  counts = np.exp(f) / s.reshape(N, 1)
-  counts[range(N), y] -= 1
-  dW = np.dot(X.T, counts)
+    counts = s.copy()
+    counts[range(N), y] -= 1
+    dW = np.dot(X.T, counts)
 
-  loss = loss / N + 0.5 * reg * np.sum(W * W)
-  dW = dW / N + reg * W
-  #############################################################################
-  #                          END OF YOUR CODE                                 #
-  #############################################################################
+    # regularization
+    loss = loss / N + 0.5 * reg * np.sum(W * W)
+    dW = dW / N + reg * W
+    #############################################################################
+    #                          END OF YOUR CODE                                 #
+    #############################################################################
 
-  return loss, dW
-
+    return loss, dW
