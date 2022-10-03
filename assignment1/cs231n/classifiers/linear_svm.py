@@ -86,10 +86,10 @@ def svm_loss_vectorized(W, X, y, reg):
     # loss += np.sum(margin) / N + 0.5 * reg * np.sum(W * W)
     scores = X.dot(W)  # N x C
     # 此处的range(num_train)与y一一对应scores矩阵中的正确标签score，相当于提取出来，再排列成Nx1的向量
-    margin = scores - scores[range(0, num_train), y].reshape(-1, 1) + delta  # N x C
-    margin[range(num_train), y] = 0
+    margin = scores - scores[range(num_train), y].reshape(-1, 1) + delta  # N x C
     margin = (margin > 0) * margin
-    loss += (margin.sum() / num_train) + 0.5 * reg * np.sum(W * W)
+    margin[range(num_train), y] = 0
+    loss = (margin.sum() / num_train) + 0.5 * reg * np.sum(W * W)
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
@@ -104,9 +104,12 @@ def svm_loss_vectorized(W, X, y, reg):
     # loss.                                                                     #
     #############################################################################
     pass
-    counts = (margin > 0).astype(int)
-    counts[range(num_train), y] = - np.sum(counts, axis=1)
-    dW += np.dot(X.T, counts) / num_train + reg * W
+    counts = (margin > 0).astype(int)  # 正值1：预测的label坐标
+    counts[range(num_train), y] = - np.sum(counts, axis=1)  # 负值-1：实际的label坐标
+    # 这一步矩阵乘法相当于实现差分运算：预测-实际
+    dW = np.dot(X.T, counts)
+    # 正则化
+    dW = dW / num_train + reg * W
     #############################################################################
     #                             END OF YOUR CODE                              #
     #############################################################################
