@@ -78,11 +78,14 @@ def softmax_loss_vectorized(W, X, y, reg):
     pass
     N = X.shape[0]
     score = np.dot(X, W)  # score.shape = N, C
+    # 操作同上
     score -= score.max(axis=1).reshape(-1, 1)
+
     s = np.exp(score) / np.exp(score).sum(axis=1).reshape(-1, 1)  # s.shape= NxC
     loss = -np.sum(np.log(s[range(N), y]))
 
     counts = s.copy()
+    # j=yi,梯度需要-xi
     counts[range(N), y] -= 1
     dW = np.dot(X.T, counts)
 
