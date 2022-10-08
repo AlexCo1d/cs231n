@@ -84,6 +84,7 @@ def softmax_loss_vectorized(W, X, y, reg):
     s = np.exp(score) / np.exp(score).sum(axis=1).reshape(-1, 1)  # s.shape= NxC
     loss = -np.sum(np.log(s[range(N), y]))
 
+    # 梯度的详细推导过程： https://blog.csdn.net/jasonleesjtu/article/details/89426465
     counts = s.copy()
     # j=yi,梯度需要-xi
     counts[range(N), y] -= 1
