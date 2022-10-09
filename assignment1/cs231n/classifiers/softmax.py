@@ -86,7 +86,7 @@ def softmax_loss_vectorized(W, X, y, reg):
 
     # 梯度的详细推导过程： https://blog.csdn.net/jasonleesjtu/article/details/89426465
     counts = s.copy()
-    # j=yi,梯度需要-xi
+    # j=yi,梯度需要-xi,j!=yi,不需要
     counts[range(N), y] -= 1
     dW = np.dot(X.T, counts)
 
