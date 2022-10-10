@@ -125,7 +125,7 @@ class TwoLayerNet(object):
         dhidden = np.dot(dscore, W2.T)
 
         # 对max门的梯度法则
-        dhidden[hidden_layer <= 0] = 0
+        dhidden = (hidden_layer > 0) * dhidden
 
         grads['W1'] = np.dot(X.T, dhidden) + reg * W1
         grads['b1'] = np.sum(dhidden, axis=0)
